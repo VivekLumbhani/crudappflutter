@@ -28,7 +28,7 @@ class _WrapperState extends State<wrapper> { // Use _WrapperState as the state c
     if (user == null) {
       return sigin(toggle: toggleview);
     } else {
-      return home(user: user); // Pass the user object to the Home widget
+      return home(); // Pass the user object to the Home widget
     }
   }
 }

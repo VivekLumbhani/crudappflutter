@@ -1,6 +1,7 @@
 import 'dart:convert';
-
-import 'package:crudapplication/screens/home/home.dart';
+import 'home.dart';
+import 'package:crudapplication/navbar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -20,25 +21,28 @@ class _BusBookingPageState extends State<BusBookingPage> {
   int numberOfSeats = 0;
   String busname = '';
   String user = '';
-
+  double totalprice=0.0;
   @override
   void initState() {
     super.initState();
     numberOfSeats = widget.number;
     busname = widget.busname;
     // user=widget.username;
-    print('number of seats $numberOfSeats and name is $busname ${widget.username.email}');
+
   }
 
   void _toggleSeatSelection(int index) {
     setState(() {
       if (index <= numberOfSeats) {
-        int calculatedIndex = index - 1; // Adjust for 0-based indexing
+        int calculatedIndex = index - 1;
         if (seatAvailability[calculatedIndex]) {
           if (selectedSeats.contains(calculatedIndex)) {
             selectedSeats.remove(calculatedIndex);
+            // totalprice-=priceper;
           } else {
             selectedSeats.add(calculatedIndex);
+            // totalprice+=priceper;
+
           }
         }
       }
@@ -57,7 +61,13 @@ class _BusBookingPageState extends State<BusBookingPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    final username=FirebaseAuth.instance.currentUser;
+    bool isAdmin = user == 'admin@gmail.com';
+    double priceper ;
+
     return Scaffold(
+      drawer:navbar(email:username!.email.toString() ),
       appBar: AppBar(
         title: Text('Bus Booking'),
         actions: [
@@ -65,17 +75,19 @@ class _BusBookingPageState extends State<BusBookingPage> {
             onPressed: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => home(user: widget.username)),
+                MaterialPageRoute(builder: (context) => home()),
               );
             },
             child: Text('Home'),
           ),
+
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('allseatsrecord')
             .where('busname', isEqualTo: busname)
             .snapshots(),
+
         builder: (context, snapshot) {
 
           if (snapshot.hasError) {
@@ -88,9 +100,21 @@ class _BusBookingPageState extends State<BusBookingPage> {
 
           var itemList = snapshot.data!.docs;
           var seatsData = itemList.first['seats'];
+
+          FirebaseFirestore.instance.collection('buscollection')
+              .doc(busname)
+              .get()
+              .then((DocumentSnapshot documentSnapshot) {
+            // Check if the document exists
+            if (!documentSnapshot.exists) {
+              return CircularProgressIndicator();
+            }
+          });
+
+
+
           List<dynamic> strtoarr=jsonDecode(seatsData);
           print('seatsData type: ${strtoarr.runtimeType} and seats are $strtoarr');
-
 
           return Center(
             child: Padding(
@@ -150,25 +174,22 @@ class _BusBookingPageState extends State<BusBookingPage> {
                     onPressed: selectedSeats.isEmpty
                         ? null
                         : () async {
-                      //to add seats details about users journey
+
                       var finalseats=selectedSeats.map((seat) => seat + 1).toList();
-                      // Check if the document with the email exists in Firestore
                       var querySnapshotForCheck = await FirebaseFirestore.instance
                           .collection('journeydetail')
-                          .where('email', isEqualTo: widget.username.email)
+                          .where('email', isEqualTo: username!.email.toString())
                           .where('busname',isEqualTo:widget.busname)
                           .get();
 
                       if (querySnapshotForCheck.docs.isNotEmpty) {
                         var existingDoc = querySnapshotForCheck.docs.first;
 
-                        // Convert the existing seats string to a list
                         var existingSeats = <int>[];
                         if (existingDoc['seats'] != null) {
                           try {
                             existingSeats = (jsonDecode(existingDoc['seats']) as List<dynamic>).cast<int>();
                           } catch (e) {
-                            // Handle JSON decoding error
                             print('Error decoding existing seats: $e');
                           }
                         }
@@ -189,14 +210,10 @@ class _BusBookingPageState extends State<BusBookingPage> {
                         await FirebaseFirestore.instance.collection('journeydetail').add({
                           'seats': str,
                           'busname': busname,
-                          'email': widget.username.email,
+                          'email': username!.email.toString(),
                         });
                       }
 
-
-
-
-                      // Retrieving seat information from the 'allseatsrecord' collection
                       var snapshot = await FirebaseFirestore.instance
                           .collection('allseatsrecord')
                           .where('busname', isEqualTo: busname)
@@ -210,8 +227,6 @@ class _BusBookingPageState extends State<BusBookingPage> {
                       print('seatsData content: $seattype');
                       var newseatlist=seattype+finalseats;
                       print('seats that are booked + $newseatlist ');
-
-
 
                       // to update new added seats bookeed detail in db
                       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -230,7 +245,7 @@ class _BusBookingPageState extends State<BusBookingPage> {
 
                         print("New document created for busname: $busname");
                       } else {
-                        // Documents with the matching busname exist, update the seats
+
                         for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
                           DocumentReference docRef = documentSnapshot.reference;
                           print('not new');
@@ -243,15 +258,9 @@ class _BusBookingPageState extends State<BusBookingPage> {
                         print("Seats data updated for busname: $busname");
                       }
 
-                      // FirebaseFirestore.instance.collection('allseatsrecord').add({
-                      //   'seats': '$newseatlist',
-                      //   'busname': '$busname'
-                      // });
-
-                      print(
-                          'selected seats are $selectedSeats and name is $busname user is ${widget.username.email} ');
+                      print('selected seats are $selectedSeats and name is $busname user is ${username!.email.toString()} ');
                     },
-                    child: Text('Book Selected Seats'),
+                    child: Text('Book Selected Seats $totalprice'),
                   ),
                 ],
               ),

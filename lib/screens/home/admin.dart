@@ -1,14 +1,9 @@
 import 'package:crudapplication/navbar.dart';
-import 'package:crudapplication/screens/home/bookseat.dart';
-import 'package:crudapplication/screens/home/home.dart';
-import 'package:crudapplication/screens/home/journeydet.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Import the intl package
-import 'package:crudapplication/models/user.dart';
-import 'package:crudapplication/services/auth.dart';
+import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore package
-
 import 'package:firebase_database/firebase_database.dart';
 
 final database = FirebaseDatabase.instance;
@@ -17,23 +12,17 @@ final rootRef = database.ref();
 
 
 class admin extends StatefulWidget {
-  final User user;
-  admin({required this.user});
-
-
-
+  admin();
   @override
   State<admin> createState() => _adminState();
 }
 
 class _adminState extends State<admin> {
+  // final username=FirebaseAu.instance.currentUser;
 
-  final AuthService _auth = AuthService();
   final _formkey = GlobalKey<FormState>();
   DateTime selectedDate = DateTime.now();
-  TimeOfDay _selectedDepartureTime = TimeOfDay.now();
-  TimeOfDay _selectedDestinationTime = TimeOfDay.now();
-  final DateFormat _dateFormat = DateFormat('yyyy-MM-dd'); // Date format
+   final DateFormat _dateFormat = DateFormat('yyyy-MM-dd'); // Date format
   int selectedRadio = 0;
   late DatabaseReference dbref;
   final TextEditingController busname = TextEditingController();
@@ -45,6 +34,9 @@ class _adminState extends State<admin> {
   final TextEditingController pricecontrol = TextEditingController();
   final TextEditingController seatscontrol = TextEditingController();
   final TextEditingController accontrol=TextEditingController();
+  TimeOfDay _selectedDepartureTime = TimeOfDay.now();
+  TimeOfDay _selectedDestinationTime = TimeOfDay.now();
+
   setSelectedRadio(int val) {
     setState(() {
       selectedRadio = val;
@@ -89,86 +81,14 @@ class _adminState extends State<admin> {
     }
   }
 
+  final username=FirebaseAuth.instance.currentUser;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
 
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            UserAccountsDrawerHeader(
-              accountName: Row(
-                children: [
-                  Icon(
-                    Icons.person,
-                    size: 30,
-                    color: Colors.white,
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    "Welcome,",
-                    style: TextStyle(fontSize: 30),
-                  ),
-                ],
-              ),
-              accountEmail: Row(
-                children: [
-                  SizedBox(width: 30),
-                  Text(
-                    widget.user.email,
-                    style: TextStyle(fontSize: 25),
-                  ),
-                ],
-              ),
-              decoration: BoxDecoration(
-                color: Colors.pink,
-                // image: DecorationImage(image: AssetImage('images/nav.jpg'),fit: BoxFit.cover )
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.home),
-              title: Text('home'),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => home(user: widget.user)),
-                );
-              },
-            ),
+      drawer:navbar(email: username!.email.toString()),
 
-            // if (isAdmin)
-            ListTile(
-              leading: Icon(Icons.person),
-              title: Text('admin'),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => admin(user: widget.user)),
-                );
-              },
-            ),
-
-            ListTile(
-              leading: Icon(Icons.route),
-              title: Text('my Journey'),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => journeydet(user: widget.user)),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.exit_to_app),
-              title: Text('Sign out'),
-              onTap: () {
-                _auth.signout();
-              },
-            ),
-          ],
-        ),
-      ), // Pass the email value
 
       appBar: AppBar(title: Text('Admin Panel'), centerTitle: true,),
       body: Padding(
@@ -183,7 +103,7 @@ class _adminState extends State<admin> {
                   controller:  busname,
                   keyboardType: TextInputType.text,
                   validator: (val) {
-                    if (val == null || val.length<6) {
+                    if (val == null || val.length<5) {
                       return 'Enter Bus Name';
                     }
                     return null;
@@ -193,7 +113,7 @@ class _adminState extends State<admin> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Selected Date: ${_dateFormat.format(selectedDate)}'), // Format the date
+                    Text('Selected Date: ${_dateFormat.format(selectedDate)}'),
                     ElevatedButton(
                       onPressed: () => _selectDate(context),
                       child: Text('Select Date'),
@@ -245,11 +165,12 @@ class _adminState extends State<admin> {
                     Text('Destination Time: ${_formatTime(_selectedDestinationTime)}'),
                     ElevatedButton(
                       onPressed: () {
-                        _selectTime(context, false);
-                        destinationtimecontrol.text=_formatTime(_selectedDestinationTime);
+                        _selectTime(context, false); // Pass 'false' for destination time
+                        destinationtimecontrol.text = _formatTime(_selectedDestinationTime);
                       },
                       child: Text('Destination Time'),
                     ),
+
                   ],
                 ),
                 SizedBox(height: 20,),
@@ -353,12 +274,9 @@ class _adminState extends State<admin> {
                       );
                     }
                   },
+
                   child: Text('Submit Bus details'),
                 ),
-                ElevatedButton(onPressed: (){
-                  Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => home(user: widget.user,)),);
-                }, child: Text('home Page')),
-
               ],
             ),
           ),

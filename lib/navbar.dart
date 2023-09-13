@@ -1,6 +1,10 @@
 import 'package:crudapplication/models/user.dart';
-import 'package:flutter/material.dart';
 import 'package:crudapplication/screens/home/admin.dart';
+import 'package:crudapplication/screens/home/home.dart';
+import 'package:crudapplication/screens/home/journeydet.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
 
 class navbar extends StatelessWidget {
   final String email;
@@ -9,7 +13,7 @@ class navbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isAdmin = email == 'noone@gmail.com';
+    bool isAdmin = email == 'admin@gmail.com';
 
     return Drawer(
       child: ListView(
@@ -48,10 +52,10 @@ class navbar extends StatelessWidget {
             leading: Icon(Icons.home),
             title: Text('home'),
             onTap: () {
-              // Navigator.pushReplacement(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => admin(User)),
-              // );
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => home()),
+              );
             },
           ),
 
@@ -60,10 +64,10 @@ class navbar extends StatelessWidget {
               leading: Icon(Icons.person),
               title: Text('admin'),
               onTap: () {
-                // Navigator.pushReplacement(
-                //   context,
-                //   // MaterialPageRoute(builder: (context) => admin(user: email as String)),
-                // );
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => admin()),
+                );
               },
             ),
 
@@ -71,16 +75,20 @@ class navbar extends StatelessWidget {
             leading: Icon(Icons.route),
             title: Text('my Journey'),
             onTap: () {
-              // Handle 'my Journey' action here
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => journeydet()),
+              );
             },
           ),
           ListTile(
             leading: Icon(Icons.exit_to_app),
             title: Text('Sign out'),
-            onTap: () {
-              // Handle 'Sign out' action here
+            onTap: () async {
+              await FirebaseAuth.instance.signOut();
             },
-          ),
+          )
+
         ],
       ),
     );
