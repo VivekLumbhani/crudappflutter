@@ -55,7 +55,7 @@ class journeydet extends StatelessWidget {
                     var departurePlace = busData['departurePlace'];
                     var destinationPlace = busData['destinationPlace'];
                     var departureTime = busData['departureTime'];
-                    String combinedDateTime = '$dateof $departureTime'; // Combine date and time
+                    String combinedDateTime = '$dateof $departureTime';
                      return SingleChildScrollView(
                       child: Card(
                         elevation: 3,

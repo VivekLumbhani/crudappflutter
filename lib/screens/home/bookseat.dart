@@ -27,8 +27,6 @@ class _BusBookingPageState extends State<BusBookingPage> {
     super.initState();
     numberOfSeats = widget.number;
     busname = widget.busname;
-    // user=widget.username;
-
   }
 
   void _toggleSeatSelection(int index) {
@@ -228,7 +226,6 @@ class _BusBookingPageState extends State<BusBookingPage> {
                       var newseatlist=seattype+finalseats;
                       print('seats that are booked + $newseatlist ');
 
-                      // to update new added seats bookeed detail in db
                       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
                           .collection('allseatsrecord')
                           .where('busname', isEqualTo: busname)
@@ -236,8 +233,6 @@ class _BusBookingPageState extends State<BusBookingPage> {
 
                       if (querySnapshot.docs.isEmpty) {
                         print(' new');
-
-                        // No document with the matching busname exists, so create a new one
                         await FirebaseFirestore.instance.collection('allseatsrecord').add({
                           'seats': newseatlist,
                           'busname': busname,
