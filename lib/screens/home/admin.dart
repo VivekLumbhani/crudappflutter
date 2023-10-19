@@ -1,30 +1,21 @@
 import 'package:crudapplication/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore package
-import 'package:firebase_database/firebase_database.dart';
-
-final database = FirebaseDatabase.instance;
-final rootRef = database.ref();
-
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class admin extends StatefulWidget {
   admin();
+
   @override
-  State<admin> createState() => _adminState();
+  State<admin> createState() => _AdminState();
 }
 
-class _adminState extends State<admin> {
-  // final username=FirebaseAu.instance.currentUser;
-
+class _AdminState extends State<admin> {
   final _formkey = GlobalKey<FormState>();
   DateTime selectedDate = DateTime.now();
-   final DateFormat _dateFormat = DateFormat('yyyy-MM-dd'); // Date format
+  final DateFormat _dateFormat = DateFormat('yyyy-MM-dd'); // Date format
   int selectedRadio = 0;
-  late DatabaseReference dbref;
   final TextEditingController busname = TextEditingController();
   final TextEditingController selectedDateController = TextEditingController();
   final TextEditingController destinationplace = TextEditingController();
@@ -33,7 +24,7 @@ class _adminState extends State<admin> {
   final TextEditingController destinationtimecontrol = TextEditingController();
   final TextEditingController pricecontrol = TextEditingController();
   final TextEditingController seatscontrol = TextEditingController();
-  final TextEditingController accontrol=TextEditingController();
+  final TextEditingController accontrol = TextEditingController();
   TimeOfDay _selectedDepartureTime = TimeOfDay.now();
   TimeOfDay _selectedDestinationTime = TimeOfDay.now();
 
@@ -64,6 +55,7 @@ class _adminState extends State<admin> {
       });
     }
   }
+
   Future<void> _selectTime(BuildContext context, bool isDepartureTime) async {
     TimeOfDay? selectedTime = await showTimePicker(
       context: context,
@@ -74,22 +66,19 @@ class _adminState extends State<admin> {
       setState(() {
         if (isDepartureTime) {
           _selectedDepartureTime = selectedTime;
+          departuretimecontrol.text = _formatTime(_selectedDepartureTime);
         } else {
           _selectedDestinationTime = selectedTime;
+          destinationtimecontrol.text = _formatTime(_selectedDestinationTime);
         }
       });
     }
   }
-
-  final username=FirebaseAuth.instance.currentUser;
-
+  final username = FirebaseAuth.instance.currentUser;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
-      drawer:navbar(email: username!.email.toString()),
-
-
+      drawer: navbar(email: username!.email.toString()),
       appBar: AppBar(title: Text('Admin Panel'), centerTitle: true,),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -100,10 +89,10 @@ class _adminState extends State<admin> {
               children: <Widget>[
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Bus Name'),
-                  controller:  busname,
+                  controller: busname,
                   keyboardType: TextInputType.text,
                   validator: (val) {
-                    if (val == null || val.length<5) {
+                    if (val == null || val.length < 5) {
                       return 'Enter Bus Name';
                     }
                     return null;
@@ -126,7 +115,7 @@ class _adminState extends State<admin> {
                   decoration: InputDecoration(labelText: 'Enter Departure Place Name'),
                   keyboardType: TextInputType.text,
                   validator: (val) {
-                    if (val == null || val.length<5) {
+                    if (val == null || val.length < 5) {
                       return 'Enter Departure Place Name';
                     }
                     return null;
@@ -140,7 +129,6 @@ class _adminState extends State<admin> {
                     ElevatedButton(
                       onPressed: () {
                         _selectTime(context, true);
-                        departuretimecontrol.text=_formatTime(_selectedDepartureTime);
                       },
                       child: Text('Departure Time'),
                     ),
@@ -152,7 +140,7 @@ class _adminState extends State<admin> {
                   decoration: InputDecoration(labelText: 'Enter Destination Place Name'),
                   keyboardType: TextInputType.text,
                   validator: (val) {
-                    if (val == null || val.length<6) {
+                    if (val == null || val.length < 6) {
                       return 'Enter Destination Place Name';
                     }
                     return null;
@@ -166,11 +154,9 @@ class _adminState extends State<admin> {
                     ElevatedButton(
                       onPressed: () {
                         _selectTime(context, false); // Pass 'false' for destination time
-                        destinationtimecontrol.text = _formatTime(_selectedDestinationTime);
                       },
                       child: Text('Destination Time'),
                     ),
-
                   ],
                 ),
                 SizedBox(height: 20,),
@@ -179,7 +165,7 @@ class _adminState extends State<admin> {
                   decoration: InputDecoration(labelText: 'Enter Price'),
                   keyboardType: TextInputType.number,
                   validator: (val) {
-                    if (val == null || val.length<2) {
+                    if (val == null || val.length < 2) {
                       return 'Enter Price';
                     }
                     return null;
@@ -191,7 +177,7 @@ class _adminState extends State<admin> {
                   groupValue: selectedRadio,
                   onChanged: (val) {
                     setSelectedRadio(val as int);
-                    accontrol.text='$val';
+                    accontrol.text = '$val';
                   },
                   title: Text('AC'),
                 ),
@@ -200,13 +186,12 @@ class _adminState extends State<admin> {
                   groupValue: selectedRadio,
                   onChanged: (val) {
                     setSelectedRadio(val as int);
-                    accontrol.text='$val';
+                    accontrol.text = '$val';
                   },
                   title: Text('Non AC'),
                 ),
                 Text('Selected Option: $selectedRadio'),
                 SizedBox(height: 20,),
-
                 TextFormField(
                   controller: seatscontrol,
                   decoration: InputDecoration(labelText: 'Enter number of seats'),
@@ -217,8 +202,8 @@ class _adminState extends State<admin> {
                     }
 
                     int? numberOfSeats = int.tryParse(val);
-                    if (numberOfSeats == null || numberOfSeats < 2 || numberOfSeats >100) {
-                      return 'seats cannot exceed 30';
+                    if (numberOfSeats == null || numberOfSeats < 2 || numberOfSeats > 30) {
+                      return 'Seats must be between 2 and 30';
                     }
 
                     return null;
@@ -231,22 +216,23 @@ class _adminState extends State<admin> {
                       String busName = busname.text;
                       String departurePlace = departureplace.text;
                       String destinationPlace = destinationplace.text;
-                      String departureTime = departuretimecontrol.text;
-                      String destinationTime = destinationtimecontrol.text;
                       String price = pricecontrol.text;
                       String acType = accontrol.text;
                       int seats = int.parse(seatscontrol.text);
-                      String date= selectedDateController.text;
+                      String date = selectedDateController.text;
+
+                      // Convert selected times to a String format
+                      String departureTime = _selectedDepartureTime.format(context); // Format to String
+                      String destinationTime = _selectedDestinationTime.format(context); // Format to String
 
                       try {
-
                         var newDocRef = await FirebaseFirestore.instance.collection('buscollections').add({
                           'busName': busName,
                           'date': date,
                           'departurePlace': departurePlace,
                           'destinationPlace': destinationPlace,
-                          'departureTime': departureTime,
-                          'destinationTime': destinationTime,
+                          'departureTime': departureTime, // Store the selected departure time as String
+                          'destinationTime': destinationTime, // Store the selected destination time as String
                           'price': price,
                           'acType': acType,
                           'seats': seats,
@@ -274,7 +260,6 @@ class _adminState extends State<admin> {
                       );
                     }
                   },
-
                   child: Text('Submit Bus details'),
                 ),
               ],

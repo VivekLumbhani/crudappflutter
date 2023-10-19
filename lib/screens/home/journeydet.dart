@@ -69,14 +69,17 @@ class journeydet extends StatelessWidget {
                               Row(
                                 children: [
                                   Expanded(
-                                      child:Text('Journey: $departurePlace',style:TextStyle(fontSize: 16) ,),
+                                    flex: 0,
+                                    child: Text('Journey: $departurePlace', style: TextStyle(fontSize: 16)),
                                   ),
                                   Icon(Icons.arrow_forward),
-                                    Expanded(
-                                      child: Text(destinationPlace,style:TextStyle(fontSize: 16) ),
-                                    )
+                                  Expanded(
+                                    flex: 3,
+                                    child: Text(destinationPlace, style: TextStyle(fontSize: 16)),
+                                  )
                                 ],
                               ),
+
                               Text('Date : $dateof'),
                               Text('Departure Time: $departureTime'),
                             ],
@@ -98,7 +101,7 @@ class journeydet extends StatelessWidget {
                                       var existingDoc = documentSnapshot.data() as Map<String, dynamic>?;
 
                                       if (existingDoc != null) {
-                                        var seatsString = existingDoc['seats'] as String; // Retrieve seats as a string
+                                        var seatsString = existingDoc['seats'] as String;
                                         var allseats = List<int>.from(jsonDecode(seatsString) as List<dynamic>);
                                         var userseats = List<int>.from(jsonDecode(seatsBooked));
 

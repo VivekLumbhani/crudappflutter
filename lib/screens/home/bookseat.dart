@@ -4,13 +4,13 @@ import 'package:crudapplication/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 class BusBookingPage extends StatefulWidget {
   final username;
   final int number;
   final busname;
-  BusBookingPage({required this.username, required this.number, required this.busname});
+  final price;
+  BusBookingPage({required this.username, required this.number, required this.busname, this.price});
   @override
   _BusBookingPageState createState() => _BusBookingPageState();
 }
@@ -21,12 +21,15 @@ class _BusBookingPageState extends State<BusBookingPage> {
   int numberOfSeats = 0;
   String busname = '';
   String user = '';
-  double totalprice=0.0;
+  double totalprice = 0.0; // Initialize totalprice to 0.0
+  double priceper = 0.0; // Initialize priceper
+
   @override
   void initState() {
     super.initState();
     numberOfSeats = widget.number;
     busname = widget.busname;
+    priceper = double.parse(widget.price.toString());
   }
 
   void _toggleSeatSelection(int index) {
@@ -36,11 +39,10 @@ class _BusBookingPageState extends State<BusBookingPage> {
         if (seatAvailability[calculatedIndex]) {
           if (selectedSeats.contains(calculatedIndex)) {
             selectedSeats.remove(calculatedIndex);
-            // totalprice-=priceper;
+            totalprice -= priceper; // Deduct the price when deselected
           } else {
             selectedSeats.add(calculatedIndex);
-            // totalprice+=priceper;
-
+            totalprice += priceper; // Add the price when selected
           }
         }
       }
@@ -59,13 +61,11 @@ class _BusBookingPageState extends State<BusBookingPage> {
 
   @override
   Widget build(BuildContext context) {
-
-    final username=FirebaseAuth.instance.currentUser;
+    final username = FirebaseAuth.instance.currentUser;
     bool isAdmin = user == 'admin@gmail.com';
-    double priceper ;
 
     return Scaffold(
-      drawer:navbar(email:username!.email.toString() ),
+      drawer: navbar(email: username!.email.toString()),
       appBar: AppBar(
         title: Text('Bus Booking'),
         actions: [
@@ -78,16 +78,11 @@ class _BusBookingPageState extends State<BusBookingPage> {
             },
             child: Text('Home'),
           ),
-
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('allseatsrecord')
-            .where('busname', isEqualTo: busname)
-            .snapshots(),
-
+        stream: FirebaseFirestore.instance.collection('allseatsrecord').where('busname', isEqualTo: busname).snapshots(),
         builder: (context, snapshot) {
-
           if (snapshot.hasError) {
             return Text('Error: ${snapshot.error}');
           }
@@ -99,19 +94,14 @@ class _BusBookingPageState extends State<BusBookingPage> {
           var itemList = snapshot.data!.docs;
           var seatsData = itemList.first['seats'];
 
-          FirebaseFirestore.instance.collection('buscollection')
-              .doc(busname)
-              .get()
-              .then((DocumentSnapshot documentSnapshot) {
+          FirebaseFirestore.instance.collection('buscollection').doc(busname).get().then((DocumentSnapshot documentSnapshot) {
             // Check if the document exists
             if (!documentSnapshot.exists) {
               return CircularProgressIndicator();
             }
           });
 
-
-
-          List<dynamic> strtoarr=jsonDecode(seatsData);
+          List<dynamic> strtoarr = jsonDecode(seatsData);
           print('seatsData type: ${strtoarr.runtimeType} and seats are $strtoarr');
 
           return Center(
@@ -137,7 +127,6 @@ class _BusBookingPageState extends State<BusBookingPage> {
                                   onTap: () {
                                     int seatNumber = i * 6 + j + 1;
                                     if (strtoarr.contains(seatNumber)) {
-
                                     } else {
                                       _toggleSeatSelection(seatNumber);
                                     }
@@ -172,12 +161,11 @@ class _BusBookingPageState extends State<BusBookingPage> {
                     onPressed: selectedSeats.isEmpty
                         ? null
                         : () async {
-
-                      var finalseats=selectedSeats.map((seat) => seat + 1).toList();
+                      var finalseats = selectedSeats.map((seat) => seat + 1).toList();
                       var querySnapshotForCheck = await FirebaseFirestore.instance
                           .collection('journeydetail')
                           .where('email', isEqualTo: username!.email.toString())
-                          .where('busname',isEqualTo:widget.busname)
+                          .where('busname', isEqualTo: widget.busname)
                           .get();
 
                       if (querySnapshotForCheck.docs.isNotEmpty) {
@@ -194,20 +182,17 @@ class _BusBookingPageState extends State<BusBookingPage> {
 
                         print('Existing seats: $existingSeats, New seats: $selectedSeats');
 
-                        // Modify the existing seats list and add new seats
                         var updatedSeats = List<int>.from(existingSeats);
                         updatedSeats.addAll(selectedSeats.map((seat) => seat + 1));
 
-                        // Update the document with the updated seats array
                         await existingDoc.reference.update({'seats': jsonEncode(updatedSeats)});
-                      }
-
-                      else {
-                         var str = jsonEncode(selectedSeats.map((seat) => seat + 1).toList());
+                      } else {
+                        var str = jsonEncode(selectedSeats.map((seat) => seat + 1).toList());
 
                         await FirebaseFirestore.instance.collection('journeydetail').add({
                           'seats': str,
                           'busname': busname,
+                          'price':totalprice,
                           'email': username!.email.toString(),
                         });
                       }
@@ -223,7 +208,7 @@ class _BusBookingPageState extends State<BusBookingPage> {
 
                       print('seatsData type: ${seattype.runtimeType}');
                       print('seatsData content: $seattype');
-                      var newseatlist=seattype+finalseats;
+                      var newseatlist = seattype + finalseats;
                       print('seats that are booked + $newseatlist ');
 
                       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -240,12 +225,10 @@ class _BusBookingPageState extends State<BusBookingPage> {
 
                         print("New document created for busname: $busname");
                       } else {
-
                         for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
                           DocumentReference docRef = documentSnapshot.reference;
                           print('not new');
                           await docRef.update({
-
                             'seats': newseatlist.toString(),
                           });
                         }
@@ -255,7 +238,7 @@ class _BusBookingPageState extends State<BusBookingPage> {
 
                       print('selected seats are $selectedSeats and name is $busname user is ${username!.email.toString()} ');
                     },
-                    child: Text('Book Selected Seats $totalprice'),
+                    child: Text('Book Selected Seats \$${totalprice.toStringAsFixed(2)}'), // Display totalprice
                   ),
                 ],
               ),

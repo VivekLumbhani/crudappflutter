@@ -15,11 +15,9 @@ class sigin extends StatefulWidget {
 class _siginState extends State<sigin> {
   final AuthService _auth = AuthService();
   final _formkey = GlobalKey<FormState>();
-
   String error='';
   String user = '';
   String pass = '';
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,8 +46,8 @@ class _siginState extends State<sigin> {
             children: <Widget>[
               SizedBox(height: 20),
               TextFormField(
-                style: TextStyle(color: Colors.white),
-                decoration: textInputdeco.copyWith(hintText: 'Enter Email'),
+                style: TextStyle(color: Colors.black),
+                decoration: InputDecoration(hintText: 'Enter Email',hintStyle: TextStyle(color: Colors.grey), fillColor: Colors.grey[300], filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none,),),
                 validator: (val) {
                   if (val == null || val.isEmpty) {
                     return 'Enter email';
@@ -61,11 +59,10 @@ class _siginState extends State<sigin> {
                     user = val;
                   });
                 },
-              ),
-              SizedBox(height: 20),
+              ),              SizedBox(height: 20),
               TextFormField(
-                style: TextStyle(color: Colors.white),
-                decoration: textInputdeco.copyWith(hintText: 'Enter Password'),
+                style: TextStyle(color: Colors.black),
+                decoration: InputDecoration(hintText: 'Enter Password', hintStyle: TextStyle(color: Colors.grey), fillColor: Colors.grey[300], filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none,),),
                 validator: (val) {
                   if (val == null || val.isEmpty) {
                     return 'Enter password';
@@ -76,8 +73,7 @@ class _siginState extends State<sigin> {
                 onChanged: (val) {
                   pass = val;
                 },
-              ),
-              SizedBox(height: 20),
+              ),              SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   if (_formkey.currentState != null && _formkey.currentState!.validate()) {
@@ -95,25 +91,10 @@ class _siginState extends State<sigin> {
 
                   }
                 },
-                child: Text('Sign In'),
+                child: Text('LogIn'),
               ),
               SizedBox(height: 20,),
               Text(error,style: TextStyle(color: Colors.red,fontSize: 14),)
-
-
-              // ElevatedButton(
-              //   child: Text('sig in aanon'),
-              //   onPressed: () async{
-              //     dynamic result= await _auth.signInAnon();
-              //
-              //     if(result== null){
-              //       print('error');
-              //     }else{
-              //       print(result.uid);
-              //       print('sigin');
-              //     }
-              //   },
-              // ),
             ],
           ),
         ),

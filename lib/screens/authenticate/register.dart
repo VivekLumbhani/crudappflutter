@@ -1,9 +1,6 @@
-import 'package:crudapplication/screens/authenticate/sign_in.dart';
 import 'package:flutter/material.dart';
 import 'package:crudapplication/services/auth.dart';
-import 'package:crudapplication/shared/constants.dart';
 class register extends StatefulWidget {
-
   @override
   State<register> createState() => _registerState();
 }
@@ -27,8 +24,8 @@ class _registerState extends State<register> {
             children: <Widget>[
               SizedBox(height: 20),
               TextFormField(
-                style: TextStyle(color: Colors.white),
-                decoration: textInputdeco.copyWith(hintText: 'Enter Email'),
+                style: TextStyle(color: Colors.black),
+                decoration: InputDecoration(hintText: 'Enter Email',hintStyle: TextStyle(color: Colors.grey), fillColor: Colors.grey[300], filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none,),),
                 validator: (val) {
                   if (val == null || val.length<6) {
                     return 'Enter email';
@@ -43,8 +40,8 @@ class _registerState extends State<register> {
               ),
               SizedBox(height: 20),
               TextFormField(
-                style: TextStyle(color: Colors.white),
-                decoration: textInputdeco.copyWith(hintText: 'Enter Password'),
+                style: TextStyle(color: Colors.black),
+                decoration: InputDecoration(hintText: 'Enter Password', hintStyle: TextStyle(color: Colors.grey), fillColor: Colors.grey[300], filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none,),),
                 validator: (val) {
                   if (val == null || val.length < 6) {
                     return 'Enter at least 6 characters';
@@ -66,14 +63,12 @@ class _registerState extends State<register> {
                         error='not regitsterd';
                       });
                     }else{
-
+                      Navigator.pop(context);
                     }
-
                   }
                 },
                 child: Text('Register'),
               ),
-              SizedBox(height: 20,),
               Text(error,style: TextStyle(color: Colors.red,fontSize: 14),)
             ],
           ),

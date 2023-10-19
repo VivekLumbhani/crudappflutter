@@ -1,31 +1,20 @@
 import 'package:crudapplication/navbar.dart';
 import 'package:crudapplication/screens/home/bookseat.dart';
-import 'package:crudapplication/screens/home/journeydet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:crudapplication/models/user.dart';
 import 'package:crudapplication/services/auth.dart';
 import 'package:intl/intl.dart';
-import 'admin.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-
 class home extends StatelessWidget {
   home();
-
   final AuthService _auth = AuthService();
-
   @override
   Widget build(BuildContext context) {
     var username=FirebaseAuth.instance.currentUser;
-    bool isAdmin = username!.email.toString() == 'admin@gmail.com';
-
     return MaterialApp(
       debugShowCheckedModeBanner:false,
       home: Scaffold(
-
         drawer: navbar(email: username!.email.toString()),
-
         backgroundColor: Colors.white,
         appBar: AppBar(
           title: Text('Home'),
@@ -60,7 +49,7 @@ class home extends StatelessWidget {
                     onTap: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => BusBookingPage(username: username!.email.toString(),number:seats,busname: documentIds[index])),
+                        MaterialPageRoute(builder: (context) => BusBookingPage(username: username!.email.toString(),number:seats,busname: documentIds[index],price: price,)),
                       );
                     },
                     child: SingleChildScrollView(
@@ -125,13 +114,10 @@ class home extends StatelessWidget {
                     ),
                   );
                 } else {
-                  return Container(); // Don't show cards for future trips
+                  return Container();
                 }
-
               },
-
             );
-
           },
         ),
       ),
